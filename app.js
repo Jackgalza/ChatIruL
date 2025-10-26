@@ -13,14 +13,18 @@ const API = "https://chatirul-backend.onrender.com";
 let session_id = localStorage.getItem('session_id');
 let current_conv = parseInt(localStorage.getItem('conversation_id') || "0", 10);
 
-async function ensureSession() {
-  if (!session_id) {
-    const res = await fetch(API + '/api/new-session', {method:'POST'});
-    const j = await res.json();
-    session_id = j.session_id;
-    current_conv = j.conversation_id;
-    localStorage.setItem('session_id', session_id);
-    localStorage.setItem('conversation_id', current_conv);
+async function createNewConversation() {
+  try {
+    const res = await fetch(`${API}/conversations`, {
+      method: "POST",
+    });
+    if (!res.ok) throw new Error("Gagal membuat conversation");
+    const data = await res.json();
+    currentConversationId = data.id;
+    addConversationToList(data.id);
+    console.log("Conversation baru dibuat:", currentConversationId);
+  } catch (err) {
+    alert("Gagal buat conversation baru: " + err.message);
   }
 }
 
