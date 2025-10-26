@@ -15,16 +15,15 @@ let current_conv = parseInt(localStorage.getItem('conversation_id') || "0", 10);
 
 async function createNewConversation() {
   try {
-    const res = await fetch(`${API}/conversations`, {
-      method: "POST",
-    });
-    if (!res.ok) throw new Error("Gagal membuat conversation");
+    const res = await fetch(`${API}/conversations`, { method: "POST" });
+    if (!res.ok) throw new Error(`Gagal membuat conversation: ${res.status}`);
     const data = await res.json();
     currentConversationId = data.id;
     addConversationToList(data.id);
-    console.log("Conversation baru dibuat:", currentConversationId);
+    console.log("Conversation baru:", currentConversationId);
   } catch (err) {
-    alert("Gagal buat conversation baru: " + err.message);
+    console.error(err);
+    alert("Gagal membuat conversation baru. Cek koneksi backend di Render!");
   }
 }
 
