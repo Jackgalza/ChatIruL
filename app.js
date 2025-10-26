@@ -1,132 +1,103 @@
-// app.js (frontend ready-to-use, set API url di baris bawah)
-const convsDiv = document.getElementById('convs');
-const chatDiv = document.getElementById('chat');
-const input = document.getElementById('input');
-const sendBtn = document.getElementById('send');
-const newConvBtn = document.getElementById('newConv');
-const resetSessionBtn = document.getElementById('resetSession');
-const titleEl = document.getElementById('title');
+const API = "https://chatirul-backend.onrender.com"; // GANTI dengan URL backend kamu
 
-// SET URL BACKEND RENDER DI SINI:
-const API = "https://chatirul-backend.onrender.com";
+let currentConversationId = null;
+const conversationList = document.getElementById("conversationList");
+const messageList = document.getElementById("messageList");
+const inputBox = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendBtn");
+const newConvBtn = document.getElementById("newConvBtn");
+const resetSessionBtn = document.getElementById("resetSessionBtn");
 
-let session_id = localStorage.getItem('session_id');
-let current_conv = parseInt(localStorage.getItem('conversation_id') || "0", 10);
+// ✅ Pastikan ada session aktif
+async function ensureSession() {
+  if (!currentConversationId) {
+    await createNewConversation();
+  }
+}
 
+// ✅ Buat conversation baru
 async function createNewConversation() {
   try {
     const res = await fetch(`${API}/conversations`, { method: "POST" });
-    if (!res.ok) throw new Error(`Gagal membuat conversation: ${res.status}`);
+    if (!res.ok) throw new Error("Gagal membuat conversation");
     const data = await res.json();
     currentConversationId = data.id;
     addConversationToList(data.id);
+    clearMessages();
     console.log("Conversation baru:", currentConversationId);
   } catch (err) {
-    console.error(err);
-    alert("Gagal membuat conversation baru. Cek koneksi backend di Render!");
+    alert("Gagal buat conversation baru: " + err.message);
   }
 }
 
-async function loadConversations(){
+// ✅ Tambahkan conversation ke daftar di sidebar
+function addConversationToList(id) {
+  const li = document.createElement("li");
+  li.textContent = "Chat " + id.substring(0, 6);
+  li.onclick = () => {
+    currentConversationId = id;
+    clearMessages();
+    console.log("Berpindah ke:", id);
+  };
+  conversationList.appendChild(li);
+}
+
+// ✅ Kirim pesan ke backend
+async function sendMessage() {
   await ensureSession();
-  const res = await fetch(API + `/api/conversations/${session_id}`);
-  const j = await res.json();
-  convsDiv.innerHTML = "";
-  j.conversations.forEach(c => {
-    const d = document.createElement('div');
-    d.className = 'conv';
-    d.textContent = c.title + " (" + c.id + ")";
-    d.onclick = () => {
-      current_conv = c.id;
-      localStorage.setItem('conversation_id', current_conv);
-      loadMessages(current_conv);
-    };
-    convsDiv.appendChild(d);
-  });
-}
 
-async function loadMessages(convId){
-  const res = await fetch(API + `/api/messages/${convId}`);
-  const j = await res.json();
-  chatDiv.innerHTML = "";
-  j.messages.forEach(m => {
-    const d = document.createElement('div');
-    d.className = 'msg ' + (m.role === 'assistant' ? 'assistant' : 'user');
-    d.innerHTML = `<strong>${m.role}:</strong> ${m.content}`;
-    chatDiv.appendChild(d);
-  });
-  titleEl.textContent = "Conversation #" + convId;
-  chatDiv.scrollTop = chatDiv.scrollHeight;
-}
-
-sendBtn.onclick = async () => {
-  const text = input.value.trim();
+  const text = inputBox.value.trim();
   if (!text) return;
-  if (!current_conv) {
-    alert("Pilih atau buat conversation dulu");
-    return;
-  }
-  appendMessage('user', text);
-  input.value = '';
-  appendMessage('assistant', '...thinking');
+
+  appendMessage("user", text);
+  inputBox.value = "";
+
   try {
-    const res = await fetch(API + '/api/send', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({session_id, conversation_id: current_conv, message: text})
+    const res = await fetch(`${API}/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        conversation_id: currentConversationId,
+        text: text,
+      }),
     });
-    const j = await res.json();
-    replaceLastAssistant(j.text);
-  } catch (e) {
-    replaceLastAssistant('Error: ' + e.message);
-  }
-};
 
-function appendMessage(role, text) {
-  const d = document.createElement('div');
-  d.className = 'msg ' + (role === 'assistant' ? 'assistant' : 'user');
-  d.innerHTML = `<strong>${role}:</strong> ${text}`;
-  chatDiv.appendChild(d);
-  chatDiv.scrollTop = chatDiv.scrollHeight;
+    const data = await res.json();
+    appendMessage("bot", data.response);
+  } catch (err) {
+    appendMessage("bot", "[Gagal terhubung ke backend]");
+  }
 }
 
-function replaceLastAssistant(text) {
-  const nodes = chatDiv.querySelectorAll('.assistant');
-  if (nodes.length === 0) {
-    appendMessage('assistant', text);
-    return;
-  }
-  const last = nodes[nodes.length - 1];
-  last.innerHTML = `<strong>assistant:</strong> ${text}`;
-  chatDiv.scrollTop = chatDiv.scrollHeight;
+// ✅ Tambahkan pesan ke tampilan
+function appendMessage(sender, text) {
+  const div = document.createElement("div");
+  div.className = sender;
+  div.textContent = (sender === "user" ? "🧍: " : "🤖: ") + text;
+  messageList.appendChild(div);
+  messageList.scrollTop = messageList.scrollHeight;
 }
 
-newConvBtn.onclick = async () => {
-  await ensureSession();
-  const res = await fetch(API + '/api/new-conversation', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({session_id})
-  });
-  const j = await res.json();
-  current_conv = j.conversation_id;
-  localStorage.setItem('conversation_id', current_conv);
-  await loadConversations();
-  await loadMessages(current_conv);
-};
+// ✅ Bersihkan tampilan pesan
+function clearMessages() {
+  messageList.innerHTML = "";
+}
 
-resetSessionBtn.onclick = async () => {
-  localStorage.removeItem('session_id');
-  localStorage.removeItem('conversation_id');
-  session_id = null;
-  current_conv = 0;
-  await ensureSession();
-  await loadConversations();
-  await loadMessages(current_conv);
-};
+// ✅ Reset session
+function resetSession() {
+  currentConversationId = null;
+  clearMessages();
+  conversationList.innerHTML = "";
+  console.log("Session direset.");
+}
 
-(async () => {
+// 🎯 Event listener
+sendBtn.onclick = sendMessage;
+newConvBtn.onclick = createNewConversation;
+resetSessionBtn.onclick = resetSession;
+
+// ✅ Buat sesi awal otomatis
+window.onload = async () => {
   await ensureSession();
-  await loadConversations();
-  if (current_conv) await loadMessages(current_conv);
-})();
+  console.log("Session awal dibuat otomatis:", currentConversationId);
+};
