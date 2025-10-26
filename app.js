@@ -1,4 +1,4 @@
-const API = "https://chatirul-backend.onrender.com"; // GANTI dengan URL backend kamu
+const API = "https://chatirul-backend.onrender.com"; // backend URL kamu
 
 let currentConversationId = null;
 const conversationList = document.getElementById("conversationList");
@@ -8,14 +8,14 @@ const sendBtn = document.getElementById("sendBtn");
 const newConvBtn = document.getElementById("newConvBtn");
 const resetSessionBtn = document.getElementById("resetSessionBtn");
 
-// ✅ Pastikan ada session aktif
+// Buat sesi otomatis kalau belum ada
 async function ensureSession() {
   if (!currentConversationId) {
     await createNewConversation();
   }
 }
 
-// ✅ Buat conversation baru
+// Buat percakapan baru
 async function createNewConversation() {
   try {
     const res = await fetch(`${API}/conversations`, { method: "POST" });
@@ -30,7 +30,7 @@ async function createNewConversation() {
   }
 }
 
-// ✅ Tambahkan conversation ke daftar di sidebar
+// Tambahkan conversation ke daftar
 function addConversationToList(id) {
   const li = document.createElement("li");
   li.textContent = "Chat " + id.substring(0, 6);
@@ -42,7 +42,7 @@ function addConversationToList(id) {
   conversationList.appendChild(li);
 }
 
-// ✅ Kirim pesan ke backend
+// Kirim pesan ke backend
 async function sendMessage() {
   await ensureSession();
 
@@ -69,7 +69,7 @@ async function sendMessage() {
   }
 }
 
-// ✅ Tambahkan pesan ke tampilan
+// Tambahkan pesan ke UI
 function appendMessage(sender, text) {
   const div = document.createElement("div");
   div.className = sender;
@@ -78,12 +78,12 @@ function appendMessage(sender, text) {
   messageList.scrollTop = messageList.scrollHeight;
 }
 
-// ✅ Bersihkan tampilan pesan
+// Bersihkan pesan
 function clearMessages() {
   messageList.innerHTML = "";
 }
 
-// ✅ Reset session
+// Reset session
 function resetSession() {
   currentConversationId = null;
   clearMessages();
@@ -91,12 +91,12 @@ function resetSession() {
   console.log("Session direset.");
 }
 
-// 🎯 Event listener
+// Event listener
 sendBtn.onclick = sendMessage;
 newConvBtn.onclick = createNewConversation;
 resetSessionBtn.onclick = resetSession;
 
-// ✅ Buat sesi awal otomatis
+// Jalankan saat halaman dibuka
 window.onload = async () => {
   await ensureSession();
   console.log("Session awal dibuat otomatis:", currentConversationId);
