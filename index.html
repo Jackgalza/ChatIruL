@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>ChatIruL</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <div id="sidebar">
+      <h3>Conversations</h3>
+      <div id="convs"></div>
+      <button id="newConv">+ New Conversation</button>
+    </div>
+
+    <div id="main">
+      <h2 id="title">ChatIruL</h2>
+      <div id="chat"></div>
+      <textarea id="input" rows="3" placeholder="Tulis pesan..."></textarea>
+      <div style="margin-top:.5rem">
+        <button id="send">Send</button>
+        <button id="resetSession">Reset Session</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
