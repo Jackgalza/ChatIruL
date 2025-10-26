@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Mini Chat (No Login)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Arial;max-width:900px;margin:1rem auto;padding:1rem}
+    #sidebar{float:left;width:240px;border-right:1px solid #ddd;padding-right:1rem}
+    #main{margin-left:260px}
+    #chat{border:1px solid #ddd;padding:1rem;height:400px;overflow:auto}
+    .msg{margin:0.4rem 0}
+    .user{font-weight:700}
+    .assistant{color:#0a3}
+    button{padding:.5rem 1rem;margin:.2rem}
+    .conv{padding:.4rem;border-bottom:1px solid #eee;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div id="sidebar">
+    <h3>Conversations</h3>
+    <div id="convs"></div>
+    <button id="newConv">+ New Conversation</button>
+  </div>
+
+  <div id="main">
+    <h2 id="title">Mini Chat</h2>
+    <div id="chat"></div>
+    <textarea id="input" rows="3" style="width:100%;box-sizing:border-box"></textarea>
+    <div style="margin-top:.5rem">
+      <button id="send">Send</button>
+      <button id="resetSession">Reset Session</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
