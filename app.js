@@ -1,4 +1,4 @@
-// app.js
+// app.js (frontend ready-to-use, set API url di baris bawah)
 const convsDiv = document.getElementById('convs');
 const chatDiv = document.getElementById('chat');
 const input = document.getElementById('input');
@@ -7,15 +7,15 @@ const newConvBtn = document.getElementById('newConv');
 const resetSessionBtn = document.getElementById('resetSession');
 const titleEl = document.getElementById('title');
 
-// GANTI nilai ini nanti setelah backend Render aktif
-let API = "";
+// SET URL BACKEND RENDER DI SINI:
+const API = "https://chatirul-backend.onrender.com";
 
 let session_id = localStorage.getItem('session_id');
 let current_conv = parseInt(localStorage.getItem('conversation_id') || "0", 10);
 
 async function ensureSession() {
   if (!session_id) {
-    const res = await fetch('/api/new-session', {method:'POST'});
+    const res = await fetch(API + '/api/new-session', {method:'POST'});
     const j = await res.json();
     session_id = j.session_id;
     current_conv = j.conversation_id;
@@ -26,7 +26,7 @@ async function ensureSession() {
 
 async function loadConversations(){
   await ensureSession();
-  const res = await fetch(`/api/conversations/${session_id}`);
+  const res = await fetch(API + `/api/conversations/${session_id}`);
   const j = await res.json();
   convsDiv.innerHTML = "";
   j.conversations.forEach(c => {
@@ -43,7 +43,7 @@ async function loadConversations(){
 }
 
 async function loadMessages(convId){
-  const res = await fetch(`/api/messages/${convId}`);
+  const res = await fetch(API + `/api/messages/${convId}`);
   const j = await res.json();
   chatDiv.innerHTML = "";
   j.messages.forEach(m => {
@@ -67,7 +67,7 @@ sendBtn.onclick = async () => {
   input.value = '';
   appendMessage('assistant', '...thinking');
   try {
-    const res = await fetch('/api/send', {
+    const res = await fetch(API + '/api/send', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({session_id, conversation_id: current_conv, message: text})
@@ -100,7 +100,7 @@ function replaceLastAssistant(text) {
 
 newConvBtn.onclick = async () => {
   await ensureSession();
-  const res = await fetch('/api/new-conversation', {
+  const res = await fetch(API + '/api/new-conversation', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({session_id})
