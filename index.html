@@ -5,14 +5,60 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ChatIruL</title>
   <style>
-    body { font-family: Arial; background: #111; color: #eee; margin: 0; display: flex; flex-direction: column; height: 100vh; }
-    #chat { flex: 1; overflow-y: auto; padding: 10px; }
-    .msg { margin: 8px 0; padding: 10px; border-radius: 8px; max-width: 75%; }
-    .user { background: #007bff; align-self: flex-end; color: #fff; }
-    .bot { background: #333; align-self: flex-start; color: #0f0; }
-    #input-area { display: flex; padding: 10px; background: #222; }
-    input { flex: 1; padding: 10px; border: none; border-radius: 4px; }
-    button { margin-left: 10px; padding: 10px 16px; border: none; background: #28a745; color: #fff; border-radius: 4px; cursor: pointer; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+    }
+    .msg {
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 8px;
+      max-width: 80%;
+    }
+    .user {
+      align-self: flex-end;
+      background: #238636;
+      color: white;
+    }
+    .bot {
+      align-self: flex-start;
+      background: #30363d;
+      color: #e6edf3;
+    }
+    #input-area {
+      display: flex;
+      padding: 10px;
+      background: #161b22;
+    }
+    input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      background: #21262d;
+      color: white;
+    }
+    button {
+      margin-left: 10px;
+      padding: 10px 16px;
+      border: none;
+      background: #1f6feb;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -23,21 +69,21 @@
   </div>
 
   <script>
-    const API = "https://chatirul-backend.onrender.com"; // Ganti sesuai URL Render kamu
+    const API = "https://chatirul-backend.onrender.com"; // ganti dengan URL Render kamu
     let conversationId = null;
 
-    async function newConversation() {
+    async function startConversation() {
       const res = await fetch(`${API}/conversations`, { method: "POST" });
       const data = await res.json();
       conversationId = data.id;
     }
 
     async function sendMessage() {
-      const text = document.getElementById("msg").value.trim();
+      const msgBox = document.getElementById("msg");
+      const text = msgBox.value.trim();
       if (!text) return;
-
-      appendMessage("user", text);
-      document.getElementById("msg").value = "";
+      append("user", text);
+      msgBox.value = "";
 
       const res = await fetch(`${API}/chat`, {
         method: "POST",
@@ -46,20 +92,19 @@
       });
 
       const data = await res.json();
-      appendMessage("bot", data.response);
+      append("bot", data.response || "[Error dari server]");
     }
 
-    function appendMessage(sender, text) {
-      const chat = document.getElementById("chat");
-      const msg = document.createElement("div");
-      msg.className = "msg " + sender;
-      msg.textContent = text;
-      chat.appendChild(msg);
-      chat.scrollTop = chat.scrollHeight;
+    function append(role, text) {
+      const div = document.createElement("div");
+      div.className = `msg ${role}`;
+      div.textContent = text;
+      document.getElementById("chat").appendChild(div);
+      document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
     }
 
     document.getElementById("send").onclick = sendMessage;
-    newConversation();
+    startConversation();
   </script>
 </body>
 </html>
