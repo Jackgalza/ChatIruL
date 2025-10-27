@@ -1,133 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ChatIruL 🤖</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatIruL</title>
   <style>
-    body {
-      margin: 0;
-      display: flex;
-      height: 100vh;
-      font-family: Arial, sans-serif;
-      background-color: #f3f4f6;
-    }
-    #sidebar {
-      width: 240px;
-      background: #1f2937;
-      color: white;
-      padding: 15px;
-      display: flex;
-      flex-direction: column;
-    }
-    #sidebar h2 {
-      text-align: center;
-      margin-bottom: 10px;
-    }
-    #sidebar button {
-      padding: 10px;
-      margin-bottom: 10px;
-      border: none;
-      border-radius: 5px;
-      background-color: #2563eb;
-      color: white;
-      cursor: pointer;
-    }
-    #sidebar button:hover {
-      background-color: #1d4ed8;
-    }
-    #conversationList {
-      flex-grow: 1;
-      overflow-y: auto;
-      list-style: none;
-      padding: 0;
-    }
-    #conversationList li {
-      background: #374151;
-      padding: 8px;
-      border-radius: 4px;
-      margin-bottom: 5px;
-      cursor: pointer;
-    }
-    #conversationList li:hover {
-      background: #4b5563;
-    }
-    #main {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 15px;
-    }
-    #messageList {
-      flex-grow: 1;
-      overflow-y: auto;
-      background: white;
-      border-radius: 8px;
-      padding: 10px;
-      border: 1px solid #ddd;
-      display: flex;
-      flex-direction: column;
-    }
-    #messageList div {
-      margin-bottom: 8px;
-      padding: 8px 10px;
-      border-radius: 6px;
-      max-width: 75%;
-    }
-    .user {
-      background: #2563eb;
-      color: white;
-      align-self: flex-end;
-    }
-    .bot {
-      background: #e5e7eb;
-      color: #111;
-      align-self: flex-start;
-    }
-    #inputArea {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-    }
-    #messageInput {
-      flex-grow: 1;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      resize: none;
-      height: 60px;
-      font-size: 14px;
-    }
-    #sendBtn {
-      padding: 10px 16px;
-      border: none;
-      border-radius: 8px;
-      background-color: #2563eb;
-      color: white;
-      cursor: pointer;
-    }
-    #sendBtn:hover {
-      background-color: #1d4ed8;
-    }
+    body { font-family: Arial; background: #111; color: #eee; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+    #chat { flex: 1; overflow-y: auto; padding: 10px; }
+    .msg { margin: 8px 0; padding: 10px; border-radius: 8px; max-width: 75%; }
+    .user { background: #007bff; align-self: flex-end; color: #fff; }
+    .bot { background: #333; align-self: flex-start; color: #0f0; }
+    #input-area { display: flex; padding: 10px; background: #222; }
+    input { flex: 1; padding: 10px; border: none; border-radius: 4px; }
+    button { margin-left: 10px; padding: 10px 16px; border: none; background: #28a745; color: #fff; border-radius: 4px; cursor: pointer; }
   </style>
 </head>
 <body>
-  <div id="sidebar">
-    <h2>ChatIruL</h2>
-    <button id="newConvBtn">+ New Conversation</button>
-    <button id="resetSessionBtn">Reset Session</button>
-    <ul id="conversationList"></ul>
+  <div id="chat"></div>
+  <div id="input-area">
+    <input id="msg" placeholder="Ketik pesan...">
+    <button id="send">Kirim</button>
   </div>
 
-  <div id="main">
-    <div id="messageList"></div>
+  <script>
+    const API = "https://chatirul-backend.onrender.com"; // Ganti sesuai URL Render kamu
+    let conversationId = null;
 
-    <div id="inputArea">
-      <textarea id="messageInput" placeholder="Tulis pesan..."></textarea>
-      <button id="sendBtn">Send</button>
-    </div>
-  </div>
+    async function newConversation() {
+      const res = await fetch(`${API}/conversations`, { method: "POST" });
+      const data = await res.json();
+      conversationId = data.id;
+    }
 
-  <script src="app.js"></script>
+    async function sendMessage() {
+      const text = document.getElementById("msg").value.trim();
+      if (!text) return;
+
+      appendMessage("user", text);
+      document.getElementById("msg").value = "";
+
+      const res = await fetch(`${API}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conversation_id: conversationId, text })
+      });
+
+      const data = await res.json();
+      appendMessage("bot", data.response);
+    }
+
+    function appendMessage(sender, text) {
+      const chat = document.getElementById("chat");
+      const msg = document.createElement("div");
+      msg.className = "msg " + sender;
+      msg.textContent = text;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    document.getElementById("send").onclick = sendMessage;
+    newConversation();
+  </script>
 </body>
 </html>
